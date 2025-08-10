@@ -53,10 +53,18 @@ const userSchema = new mongoose.Schema({
       default: true
     }
   },
-  savedGifts: [{
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'SavedGift'
-  }],
+                savedGifts: [{
+                title: String,
+                description: String,
+                image: String,
+                price: String,
+                category: String,
+                amazonUrl: String,
+                savedAt: {
+                  type: Date,
+                  default: Date.now
+                }
+              }],
   quizHistory: [{
     type: mongoose.Schema.Types.ObjectId,
     ref: 'QuizResult'

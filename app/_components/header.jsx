@@ -112,15 +112,15 @@ const Header = () => {
                   </li>
                 </>
               ) : (
-                <li>
-                  <Link 
-                    href="/auth" 
-                    className="block py-2 px-4 rounded-lg bg-gradient-to-r from-pink-500 to-red-500 text-white font-semibold hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-pink-500" 
-                    onClick={() => setMenuOpen(false)}
-                  >
-                    Sign In
-                  </Link>
-                </li>
+                                            <li>
+                              <Link
+                                href="/login"
+                                className="block py-2 px-4 rounded-lg bg-gradient-to-r from-pink-500 to-red-500 text-white font-semibold hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-pink-500"
+                                onClick={() => setMenuOpen(false)}
+                              >
+                                Sign In
+                              </Link>
+                            </li>
               )}
             </ul>
           </nav>

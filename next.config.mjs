@@ -8,7 +8,11 @@ const nextConfig = {
             'images-na.ssl-images-amazon.com',
             'm.media-amazon.com',
             'images.amazon.com',
-            'ecx.images-amazon.com'
+            'ecx.images-amazon.com',
+            // Additional image domains
+            'via.placeholder.com',
+            'picsum.photos',
+            'source.unsplash.com'
         ],
     },
 };
