@@ -94,6 +94,20 @@ const ResultsPage = () => {
     setSavingGift(gift.title);
     try {
       const amazon = amazonMap[gift.title];
+      
+      // Create a fallback image URL based on the gift category
+      const getFallbackImage = (category) => {
+        const categoryImages = {
+          'Electronics': 'https://images.unsplash.com/photo-1498049794561-7780e7231661?w=400&h=300&fit=crop',
+          'Home & Kitchen': 'https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=400&h=300&fit=crop',
+          'Books': 'https://images.unsplash.com/photo-1481627834876-b7833e8f5570?w=400&h=300&fit=crop',
+          'Fashion': 'https://images.unsplash.com/photo-1445205170230-053b83016050?w=400&h=300&fit=crop',
+          'Sports': 'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=400&h=300&fit=crop',
+          'Toys': 'https://images.unsplash.com/photo-1566576912321-d58ddd7a6088?w=400&h=300&fit=crop'
+        };
+        return categoryImages[category] || 'https://images.unsplash.com/photo-1519125323398-675f0ddb6308?w=400&h=300&fit=crop';
+      };
+      
       const response = await fetch('/api/save-gift', {
         method: 'POST',
         headers: {
@@ -102,7 +116,7 @@ const ResultsPage = () => {
         body: JSON.stringify({
           title: gift.title,
           description: gift.why || '',
-          image: amazon?.image || '',
+          image: amazon?.image || getFallbackImage(gift.category),
           price: amazon?.price || gift.priceRange || '',
           category: gift.category || 'General',
           amazonUrl: amazon?.url || ''

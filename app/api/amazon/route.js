@@ -24,20 +24,38 @@ function addAffiliateTagToUrl(url) {
 
 async function fetchSearchHtml(query) {
   const url = `${AMAZON_BASE}/s?k=${encodeURIComponent(query)}`
-  // Make the request look like a real browser to reduce blocking
-  const res = await fetch(url, {
-    headers: {
-      'User-Agent':
-        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124 Safari/537.36',
-      'Accept-Language': 'en-US,en;q=0.9',
-      'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-      'Cache-Control': 'no-cache'
-    },
-    // A short timeout via AbortController would be ideal; keeping it simple
-    next: { revalidate: 0 },
-  })
-  if (!res.ok) throw new Error('Failed to load Amazon search page')
-  return await res.text()
+  
+  try {
+    // Create an AbortController for timeout
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 8000); // 8 second timeout
+    
+    // Make the request look like a real browser to reduce blocking
+    const res = await fetch(url, {
+      headers: {
+        'User-Agent':
+          'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124 Safari/537.36',
+        'Accept-Language': 'en-US,en;q=0.9',
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+        'Cache-Control': 'no-cache',
+        'Referer': 'https://www.amazon.com/'
+      },
+      signal: controller.signal,
+      next: { revalidate: 0 },
+    })
+    
+    clearTimeout(timeoutId);
+    
+    if (!res.ok) {
+      console.log('Amazon fetch failed with status:', res.status);
+      return null; // Return null instead of throwing
+    }
+    
+    return await res.text()
+  } catch (error) {
+    console.log('Amazon fetch error:', error.message);
+    return null; // Return null for any error
+  }
 }
 
 // Best-effort, lightweight parsing without external deps
@@ -131,12 +149,28 @@ export async function POST(req) {
     let items = []
     try {
       const html = await fetchSearchHtml(query)
-      items = parseResults(html)
-      // Ensure all items have affiliate tags
-      items = items.map(it => ({ ...it, url: addAffiliateTagToUrl(it.url) }))
+      if (html) {
+        items = parseResults(html)
+        // Ensure all items have affiliate tags
+        items = items.map(it => ({ ...it, url: addAffiliateTagToUrl(it.url) }))
+      } else {
+        // Amazon scraping failed, create a fallback item with just the search link
+        items = [{
+          title: query,
+          url: affiliateSearchLink,
+          image: null,
+          price: null
+        }]
+      }
     } catch (e) {
+      console.log('Amazon parsing error:', e.message);
       // Graceful fallback: return only the affiliate search link
-      items = []
+      items = [{
+        title: query,
+        url: affiliateSearchLink,
+        image: null,
+        price: null
+      }]
     }
 
     return NextResponse.json({
